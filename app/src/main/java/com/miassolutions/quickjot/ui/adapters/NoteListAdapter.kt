@@ -9,6 +9,7 @@ import com.miassolutions.quickjot.databinding.ItemNoteBinding
 import com.miassolutions.quickjot.utils.toFormattedDate
 
 class NoteListAdapter(
+    private val onDeleteClick: (NoteEntity) -> Unit,
     private val onItemClick: (NoteEntity) -> Unit,
 ) : ListAdapter<NoteEntity, NoteListAdapter.NoteViewHolder>(NoteDiffCallback()) {
     override fun onCreateViewHolder(
@@ -36,6 +37,10 @@ class NoteListAdapter(
 
                 root.setOnClickListener {
                     onItemClick(item)
+                }
+                root.setOnLongClickListener {
+                    onDeleteClick(item)
+                    true
                 }
             }
         }

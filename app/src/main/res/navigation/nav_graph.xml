@@ -20,8 +20,15 @@
     <fragment
         android:id="@+id/addNoteFragment"
         android:name="com.miassolutions.quickjot.ui.fragments.AddNoteFragment"
-        android:label="Add a note"
-        tools:layout="@layout/fragment_add_note" />
+
+        tools:layout="@layout/fragment_add_note" >
+        <argument
+            android:name="noteEntity"
+            app:nullable="true"
+            android:defaultValue="@null"
+            app:argType="com.miassolutions.quickjot.data.local.NoteEntity"
+            />
+    </fragment>
     <fragment
         android:id="@+id/updateNoteFragment"
         android:name="com.miassolutions.quickjot.ui.fragments.UpdateNoteFragment"

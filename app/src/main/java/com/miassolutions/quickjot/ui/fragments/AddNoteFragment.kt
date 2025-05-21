@@ -1,18 +1,20 @@
 package com.miassolutions.quickjot.ui.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.google.android.material.appbar.MaterialToolbar
 import com.miassolutions.quickjot.R
+import com.miassolutions.quickjot.data.local.NoteEntity
 import com.miassolutions.quickjot.databinding.FragmentAddNoteBinding
 import com.miassolutions.quickjot.ui.activities.MainActivity
 import com.miassolutions.quickjot.ui.viewmodels.NoteViewModel
+import com.miassolutions.quickjot.utils.toFormattedDate
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -21,53 +23,84 @@ class AddNoteFragment : Fragment(R.layout.fragment_add_note) {
     private var _binding: FragmentAddNoteBinding? = null
     private val binding get() = _binding!!
 
+    private var currentNote: NoteEntity? = null
+    private val args by navArgs<AddNoteFragmentArgs>()
+
     private val noteViewModel by viewModels<NoteViewModel>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentAddNoteBinding.bind(view)
 
+        currentNote = args.noteEntity
+        currentNote?.let {
+            binding.apply {
+                etTitle.setText(it.title)
+                etContent.setText(it.content)
+                tvCreatedEditedAt.text = "Edited: ${it.updatedAt.toFormattedDate()}"
+            }
+        }
+
+
+
         backPressHandler()
-
-
-
-
-
 
     }
 
-    private fun takeNote() {
+
+    private fun saveNoteOnExit() {
         binding.apply {
+
+
             val title = etTitle.text.toString().trim()
             val content = etContent.text.toString().trim()
 
-            if (title.isBlank() && content.isBlank() ){
-                Toast.makeText(requireContext(), "Note discarded", Toast.LENGTH_SHORT).show()
+            if (currentNote != null) {
+                val hasChanged =
+                    currentNote?.let { it.title != title || it.content != content }!!
+
+                if (title.isBlank() && content.isBlank())  return@apply
+
+                if (hasChanged) {
+                    val updatedNote = currentNote!!.copy(title = title, content = content)
+                    noteViewModel.updateNote(updatedNote)
+                    tvCreatedEditedAt.text = updatedNote.updatedAt.toFormattedDate()
+                    Toast.makeText(requireContext(), "Note edited", Toast.LENGTH_SHORT).show()
+
+                }
+
+
             } else {
+
+                if (title.isBlank() && content.isBlank()) return@apply
 
                 noteViewModel.insertNote(title = title, content = content)
                 Toast.makeText(requireContext(), "Note saved", Toast.LENGTH_SHORT).show()
             }
         }
+
     }
 
-    fun backPressHandler(){
+    override fun onPause() {
+        super.onPause()
+        saveNoteOnExit()
+    }
+
+    fun backPressHandler() {
 
         val activity = (activity as MainActivity)
 
         val toolbar = activity.findViewById<MaterialToolbar>(R.id.materialToolbar)
         toolbar.setNavigationOnClickListener {
-            Log.d("AddNoteFragment", "BackPress handled")
-            takeNote()
+            saveNoteOnExit()
             findNavController().navigateUp()
         }
 
         requireActivity().onBackPressedDispatcher.addCallback(
             viewLifecycleOwner,
-            object : OnBackPressedCallback(true){
+            object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    Log.d("AddNoteFragment", "BackPress handled")
-                    takeNote()
+                    saveNoteOnExit()
                     findNavController().navigateUp()
                 }
             }

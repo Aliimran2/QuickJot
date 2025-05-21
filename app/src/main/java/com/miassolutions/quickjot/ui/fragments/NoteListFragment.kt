@@ -3,15 +3,14 @@ package com.miassolutions.quickjot.ui.fragments
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
 import com.miassolutions.quickjot.R
-import com.miassolutions.quickjot.data.local.NoteEntity
 import com.miassolutions.quickjot.databinding.FragmentNoteListBinding
 import com.miassolutions.quickjot.ui.adapters.NoteListAdapter
 import com.miassolutions.quickjot.ui.viewmodels.NoteViewModel
@@ -41,7 +40,7 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
 
     private fun setupUI() {
         binding.floatingActionButton.setOnClickListener {
-            val action = NoteListFragmentDirections.actionNoteListFragmentToAddNoteFragment()
+            val action = NoteListFragmentDirections.actionNoteListFragmentToAddNoteFragment(null)
             findNavController().navigate(action)
         }
     }
@@ -58,9 +57,19 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
     }
 
     private fun setupRecyclerView() {
-        noteAdapter = NoteListAdapter{
-            Toast.makeText(requireContext(), "${it.title} will be updated handle later", Toast.LENGTH_SHORT).show()
-        }
+        noteAdapter = NoteListAdapter(
+            onDeleteClick = { note ->
+                Snackbar.make(binding.root, "Deleted", Snackbar.LENGTH_LONG).setAction("Undo") {
+
+                    noteViewModel.insertAgain(note)
+                }.show()
+                noteViewModel.deleteNote(note)
+            }, onItemClick = { note ->
+                val action =
+                    NoteListFragmentDirections.actionNoteListFragmentToAddNoteFragment(note)
+                findNavController().navigate(action)
+            }
+        )
 //        val notes = List(30) { NoteEntity(it, "Title $it", "Content $it") }
 
         binding.rvNotes.adapter = noteAdapter

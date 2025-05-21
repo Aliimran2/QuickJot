@@ -37,8 +37,12 @@ class NoteViewModel @Inject constructor(private val repository: RepositoryImp) :
     }.distinctUntilChanged()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    fun insertAgain(noteEntity: NoteEntity) = viewModelScope.launch {
+        repository.insertNote(noteEntity)
+    }
 
-    fun insertNote(title: String, content: String)  {
+
+    fun insertNote(title: String, content: String) {
         val note = NoteEntity(
             title = title,
             content = content,
@@ -55,7 +59,6 @@ class NoteViewModel @Inject constructor(private val repository: RepositoryImp) :
 
     fun deleteNote(noteEntity: NoteEntity) =
         viewModelScope.launch { repository.deleteNote(noteEntity) }
-
 
 
 }

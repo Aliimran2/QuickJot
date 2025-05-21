@@ -1,4 +1,4 @@
-package com.miassolutions.quickjot.quickjotapp
+package com.miassolutions.quickjot.application
 
 import android.app.Application
 

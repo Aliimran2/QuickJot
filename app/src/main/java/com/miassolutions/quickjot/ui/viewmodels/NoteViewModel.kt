@@ -1,5 +1,6 @@
 package com.miassolutions.quickjot.ui.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.miassolutions.quickjot.data.local.NoteEntity
@@ -37,11 +38,12 @@ class NoteViewModel @Inject constructor(private val repository: RepositoryImp) :
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
 
-    fun insertNote(title: String, content: String) = {
+    fun insertNote(title: String, content: String)  {
         val note = NoteEntity(
             title = title,
             content = content,
         )
+        Log.d("NoteViewModel", "Inserting note: $title")
         viewModelScope.launch(Dispatchers.IO) { repository.insertNote(note) }
     }
 

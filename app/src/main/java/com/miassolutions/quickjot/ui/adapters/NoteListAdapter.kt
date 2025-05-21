@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.miassolutions.quickjot.data.local.NoteEntity
 import com.miassolutions.quickjot.databinding.ItemNoteBinding
+import com.miassolutions.quickjot.utils.toFormattedDate
 
 class NoteListAdapter(
 
@@ -31,6 +32,7 @@ class NoteListAdapter(
             binding.apply {
                 tvTitle.text = item.title
                 tvContent.text = item.content
+                tvCreatedAt.text = "Created: ${item.createdAt.toFormattedDate()}"
 
             }
         }

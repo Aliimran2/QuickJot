@@ -3,11 +3,13 @@ package com.miassolutions.quickjot.ui.fragments
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import com.miassolutions.quickjot.R
 import com.miassolutions.quickjot.data.local.NoteEntity
 import com.miassolutions.quickjot.databinding.FragmentNoteListBinding
@@ -39,10 +41,8 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
 
     private fun setupUI() {
         binding.floatingActionButton.setOnClickListener {
-            noteViewModel.insertNote(
-                title = "My Title",
-                content = context?.getString(R.string.lorem_ipsum) ?: "NO Text"
-            )
+            val action = NoteListFragmentDirections.actionNoteListFragmentToAddNoteFragment()
+            findNavController().navigate(action)
         }
     }
 
@@ -58,7 +58,9 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
     }
 
     private fun setupRecyclerView() {
-        noteAdapter = NoteListAdapter()
+        noteAdapter = NoteListAdapter{
+            Toast.makeText(requireContext(), "${it.title} will be updated handle later", Toast.LENGTH_SHORT).show()
+        }
 //        val notes = List(30) { NoteEntity(it, "Title $it", "Content $it") }
 
         binding.rvNotes.adapter = noteAdapter

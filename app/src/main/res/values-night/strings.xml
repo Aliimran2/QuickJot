@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="add_a_note">Add a note</string>
+    <string name="title">Title</string>
+    <string name="note">Note</string>
 </resources>

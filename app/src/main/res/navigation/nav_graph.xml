@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/noteListFragment"
         android:name="com.miassolutions.quickjot.ui.fragments.NoteListFragment"
-        android:label="fragment_note_list"
+        android:label="Notes"
         tools:layout="@layout/fragment_note_list" >
         <action
             android:id="@+id/action_noteListFragment_to_addNoteFragment"
@@ -20,7 +20,7 @@
     <fragment
         android:id="@+id/addNoteFragment"
         android:name="com.miassolutions.quickjot.ui.fragments.AddNoteFragment"
-        android:label="fragment_add_note"
+        android:label="Add a note"
         tools:layout="@layout/fragment_add_note" />
     <fragment
         android:id="@+id/updateNoteFragment"

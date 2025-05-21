@@ -31,6 +31,8 @@
             android:padding="8dp"
             android:textColor="@color/black"
             android:layout_height="wrap_content"
+            android:maxLines="8"
+            android:ellipsize="end"
             tools:text="@string/lorem_ipsum"
             app:layout_constraintEnd_toEndOf="@+id/tv_title"
             app:layout_constraintStart_toStartOf="@+id/tv_title"

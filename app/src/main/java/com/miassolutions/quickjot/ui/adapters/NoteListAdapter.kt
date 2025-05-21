@@ -9,7 +9,7 @@ import com.miassolutions.quickjot.databinding.ItemNoteBinding
 import com.miassolutions.quickjot.utils.toFormattedDate
 
 class NoteListAdapter(
-
+    private val onItemClick: (NoteEntity) -> Unit,
 ) : ListAdapter<NoteEntity, NoteListAdapter.NoteViewHolder>(NoteDiffCallback()) {
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -34,6 +34,9 @@ class NoteListAdapter(
                 tvContent.text = item.content
                 tvCreatedAt.text = "Created: ${item.createdAt.toFormattedDate()}"
 
+                root.setOnClickListener {
+                    onItemClick(item)
+                }
             }
         }
     }

@@ -14,6 +14,7 @@
         android:textStyle="bold"
         android:textSize="18sp"
         android:padding="8dp"
+        android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -22,9 +23,21 @@
         android:id="@+id/tv_content"
         android:layout_width="0dp"
         android:padding="8dp"
+        android:textColor="@color/black"
         android:layout_height="wrap_content"
         tools:text="@string/lorem_ipsum"
         app:layout_constraintEnd_toEndOf="@+id/tv_title"
         app:layout_constraintStart_toStartOf="@+id/tv_title"
         app:layout_constraintTop_toBottomOf="@+id/tv_title" />
+
+    <TextView
+        android:id="@+id/tv_createdAt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="#9FA8DA"
+        android:textSize="10dp"
+        app:layout_constraintEnd_toEndOf="@+id/tv_content"
+        app:layout_constraintTop_toBottomOf="@+id/tv_content"
+        tools:text="Created:21/05/2025" />
 </androidx.constraintlayout.widget.ConstraintLayout>

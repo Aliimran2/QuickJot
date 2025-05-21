@@ -1,6 +1,5 @@
 package com.miassolutions.quickjot.ui.fragments
 
-import android.nfc.Tag
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -14,9 +13,9 @@ import com.miassolutions.quickjot.R
 import com.miassolutions.quickjot.databinding.FragmentAddNoteBinding
 import com.miassolutions.quickjot.ui.activities.MainActivity
 import com.miassolutions.quickjot.ui.viewmodels.NoteViewModel
-import kotlin.getValue
+import dagger.hilt.android.AndroidEntryPoint
 
-
+@AndroidEntryPoint
 class AddNoteFragment : Fragment(R.layout.fragment_add_note) {
 
     private var _binding: FragmentAddNoteBinding? = null
@@ -27,11 +26,29 @@ class AddNoteFragment : Fragment(R.layout.fragment_add_note) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentAddNoteBinding.bind(view)
+
         backPressHandler()
 
 
 
 
+
+
+    }
+
+    private fun takeNote() {
+        binding.apply {
+            val title = etTitle.text.toString().trim()
+            val content = etContent.text.toString().trim()
+
+            if (title.isBlank() && content.isBlank() ){
+                Toast.makeText(requireContext(), "Note discarded", Toast.LENGTH_SHORT).show()
+            } else {
+
+                noteViewModel.insertNote(title = title, content = content)
+                Toast.makeText(requireContext(), "Note saved", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     fun backPressHandler(){
@@ -41,6 +58,7 @@ class AddNoteFragment : Fragment(R.layout.fragment_add_note) {
         val toolbar = activity.findViewById<MaterialToolbar>(R.id.materialToolbar)
         toolbar.setNavigationOnClickListener {
             Log.d("AddNoteFragment", "BackPress handled")
+            takeNote()
             findNavController().navigateUp()
         }
 
@@ -49,6 +67,7 @@ class AddNoteFragment : Fragment(R.layout.fragment_add_note) {
             object : OnBackPressedCallback(true){
                 override fun handleOnBackPressed() {
                     Log.d("AddNoteFragment", "BackPress handled")
+                    takeNote()
                     findNavController().navigateUp()
                 }
             }

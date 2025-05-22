@@ -9,15 +9,28 @@
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="ifRoom|collapseActionView" />
     <item
-        android:id="@+id/sort_title_asc"
-        android:title="@string/sort_by_title" />
-    <item
-        android:id="@+id/sort_title_desc"
-        android:title="@string/sort_by_title_d" />
-    <item
-        android:id="@+id/sort_date_asc"
-        android:title="@string/sort_by_date_a" />
-    <item
-        android:id="@+id/sort_date_desc"
-        android:title="@string/sort_by_date_d" />
+        android:icon="@drawable/ic_sort"
+        android:title="Sort By"
+        app:showAsAction="always">
+        <menu>
+
+            <item
+                android:id="@+id/sort_title_asc"
+                android:title="@string/sort_by_title" />
+            <item
+                android:id="@+id/sort_title_desc"
+                android:title="@string/sort_by_title_d" />
+            <item
+                android:id="@+id/sort_date_asc"
+                android:title="@string/sort_by_date_a" />
+            <item
+                android:id="@+id/sort_date_desc"
+                android:title="@string/sort_by_date_d" />
+
+        </menu>
+
+
+    </item>
+
+
 </menu>

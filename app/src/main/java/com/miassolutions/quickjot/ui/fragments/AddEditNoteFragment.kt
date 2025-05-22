@@ -11,26 +11,26 @@ import androidx.navigation.fragment.navArgs
 import com.google.android.material.appbar.MaterialToolbar
 import com.miassolutions.quickjot.R
 import com.miassolutions.quickjot.data.local.NoteEntity
-import com.miassolutions.quickjot.databinding.FragmentAddNoteBinding
+import com.miassolutions.quickjot.databinding.FragmentAddEditNoteBinding
 import com.miassolutions.quickjot.ui.activities.MainActivity
 import com.miassolutions.quickjot.ui.viewmodels.NoteViewModel
 import com.miassolutions.quickjot.utils.toFormattedDate
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class AddNoteFragment : Fragment(R.layout.fragment_add_note) {
+class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
 
-    private var _binding: FragmentAddNoteBinding? = null
+    private var _binding: FragmentAddEditNoteBinding? = null
     private val binding get() = _binding!!
 
     private var currentNote: NoteEntity? = null
-    private val args by navArgs<AddNoteFragmentArgs>()
+    private val args by navArgs< AddEditNoteFragmentArgs>()
 
     private val noteViewModel by viewModels<NoteViewModel>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentAddNoteBinding.bind(view)
+        _binding = FragmentAddEditNoteBinding.bind(view)
 
 
 

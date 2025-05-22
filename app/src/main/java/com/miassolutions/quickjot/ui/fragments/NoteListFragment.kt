@@ -40,7 +40,7 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
 
     private fun setupUI() {
         binding.floatingActionButton.setOnClickListener {
-            val action = NoteListFragmentDirections.actionNoteListFragmentToAddNoteFragment(null)
+            val action = NoteListFragmentDirections.toAddEditNoteFragment(null)
             findNavController().navigate(action)
         }
     }
@@ -66,7 +66,7 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
                 noteViewModel.deleteNote(note)
             }, onItemClick = { note ->
                 val action =
-                    NoteListFragmentDirections.actionNoteListFragmentToAddNoteFragment(note)
+                    NoteListFragmentDirections.toAddEditNoteFragment(note)
                 findNavController().navigate(action)
             }
         )

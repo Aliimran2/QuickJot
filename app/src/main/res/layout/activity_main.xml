@@ -25,8 +25,9 @@
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
         app:title="@string/app_name"
+
         android:minHeight="?attr/actionBarSize"
-        android:theme="?attr/actionBarTheme"
+        android:theme="@style/Widget.Material3.Toolbar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

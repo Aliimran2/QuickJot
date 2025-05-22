@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/action_search"
         android:icon="@drawable/ic_search"
         android:title="@string/search"
-        app:showAsAction="ifRoom|collapseActionView"
-        app:actionViewClass="androidx.appcompat.widget.SearchView" />
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="ifRoom|collapseActionView" />
+    <item
+        android:id="@+id/sort_title_asc"
+        android:title="@string/sort_by_title" />
+    <item
+        android:id="@+id/sort_title_desc"
+        android:title="@string/sort_by_title_d" />
+    <item
+        android:id="@+id/sort_date_asc"
+        android:title="@string/sort_by_date_a" />
+    <item
+        android:id="@+id/sort_date_desc"
+        android:title="@string/sort_by_date_d" />
 </menu>

@@ -12,4 +12,8 @@
     <string name="title">Title</string>
     <string name="note">Note</string>
     <string name="search">Search</string>
+    <string name="sort_by_title">Sort by Title ↑</string>
+    <string name="sort_by_title_d">Sort by Title ↓</string>
+    <string name="sort_by_date_a">Sort by Date ↑</string>
+    <string name="sort_by_date_d">Sort by Date ↓</string>
 </resources>

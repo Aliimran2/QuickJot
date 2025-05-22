@@ -5,13 +5,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.miassolutions.quickjot.data.local.NoteEntity
 import com.miassolutions.quickjot.data.repository.RepositoryImp
+import com.miassolutions.quickjot.utils.SortOrder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -21,15 +26,28 @@ class NoteViewModel @Inject constructor(private val repository: RepositoryImp) :
 
     private val _allNotes = repository.getAllNotes()
 
+    private val _sortedNotes = MutableStateFlow(SortOrder.TIME_DESC)
+    val sortOrder = _sortedNotes.asStateFlow()
+
+    fun sortOrder(sortOrder: SortOrder){
+        _sortedNotes.value = sortOrder
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val notesSorted: StateFlow<List<NoteEntity>> = sortOrder
+        .flatMapLatest { order ->
+            repository.getSortedNotes(order)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     private val searchQuery = MutableStateFlow<String>("")
 
     fun updateQuery(query: String) {
         searchQuery.value = query
     }
 
-    val notes: Flow<List<NoteEntity>> = combine(_allNotes, searchQuery) { allNotes, query ->
-        if (query.trim().isBlank()) allNotes
-        else allNotes.filter {
+    val notes: Flow<List<NoteEntity>> = combine(notesSorted, searchQuery) { notesSorted, query ->
+        if (query.trim().isBlank()) notesSorted
+        else notesSorted.filter {
             it.title.contains(query, ignoreCase = true) ||
                     it.content.contains(query, ignoreCase = true)
         }

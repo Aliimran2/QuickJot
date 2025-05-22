@@ -22,6 +22,7 @@ import com.miassolutions.quickjot.databinding.FragmentNoteListBinding
 import com.miassolutions.quickjot.ui.activities.MainActivity
 import com.miassolutions.quickjot.ui.adapters.NoteListAdapter
 import com.miassolutions.quickjot.ui.viewmodels.NoteViewModel
+import com.miassolutions.quickjot.utils.SortOrder
 import com.miassolutions.quickjot.utils.showToast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -76,8 +77,31 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
                 }
 
                 override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    return when (menuItem.itemId) {
+                        R.id.sort_title_asc -> {
+                            noteViewModel.sortOrder(SortOrder.TITLE_ASC)
+                            true
+                        }
 
-                    return false
+                        R.id.sort_title_desc -> {
+                            noteViewModel.sortOrder(SortOrder.TITLE_DESC)
+                            true
+                        }
+
+                        R.id.sort_date_asc -> {
+                            noteViewModel.sortOrder(SortOrder.TIME_ASC)
+                            true
+                        }
+
+                        R.id.sort_date_desc -> {
+                            noteViewModel.sortOrder(SortOrder.TIME_DESC)
+                            true
+                        }
+
+                        else -> false
+                    }
+
+
                 }
             }, viewLifecycleOwner,
             Lifecycle.State.STARTED

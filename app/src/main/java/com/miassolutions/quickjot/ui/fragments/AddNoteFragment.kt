@@ -32,6 +32,15 @@ class AddNoteFragment : Fragment(R.layout.fragment_add_note) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentAddNoteBinding.bind(view)
 
+
+
+
+updateNoteIfNotNull()
+        backPressHandler()
+
+    }
+
+    private fun updateNoteIfNotNull() {
         currentNote = args.noteEntity
         currentNote?.let {
             binding.apply {
@@ -40,11 +49,6 @@ class AddNoteFragment : Fragment(R.layout.fragment_add_note) {
                 tvCreatedEditedAt.text = "Edited: ${it.updatedAt.toFormattedDate()}"
             }
         }
-
-
-
-        backPressHandler()
-
     }
 
 
@@ -81,10 +85,7 @@ class AddNoteFragment : Fragment(R.layout.fragment_add_note) {
 
     }
 
-    override fun onPause() {
-        super.onPause()
-        saveNoteOnExit()
-    }
+
 
     fun backPressHandler() {
 

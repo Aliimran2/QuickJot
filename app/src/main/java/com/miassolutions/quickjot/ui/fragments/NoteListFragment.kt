@@ -70,7 +70,7 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
                 findNavController().navigate(action)
             }
         )
-//        val notes = List(30) { NoteEntity(it, "Title $it", "Content $it") }
+
 
         binding.rvNotes.adapter = noteAdapter
 

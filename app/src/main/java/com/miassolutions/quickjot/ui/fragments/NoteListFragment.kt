@@ -35,6 +35,7 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
 
     private var defaultMenuProvider: MenuProvider? = null
     private var selectionMenuProvider: MenuProvider? = null
+    private var isSelectionMenuAdded = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -43,15 +44,26 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
         setupRecyclerView()
         setupUI()
         observeViewModel()
-
         setupDefaultMenuProvider()
-        requireActivity().addMenuProvider(defaultMenuProvider!!, viewLifecycleOwner, Lifecycle.State.RESUMED)
+
+        defaultMenuProvider?.let {
+            requireActivity().addMenuProvider(
+                it,
+                viewLifecycleOwner,
+                Lifecycle.State.RESUMED
+            )
+        }
     }
 
     private fun setupRecyclerView() {
         noteAdapter = NoteListAdapter(
             onItemClick = { note ->
-                noteViewModel.toggleSelection(note.noteId)
+                if (!isSelectionMenuAdded) {
+                    val action = NoteListFragmentDirections.toAddEditNoteFragment(note)
+                    findNavController().navigate(action)
+                } else {
+                    noteViewModel.toggleSelection(note.noteId)
+                }
             },
             onItemLongClick = { note ->
                 noteViewModel.toggleSelection(note.noteId)
@@ -70,7 +82,7 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
     }
 
     private fun observeViewModel() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 noteViewModel.displayedNotes.collectLatest { notes ->
                     Log.d(TAG, "Notes: $notes")
@@ -79,32 +91,49 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
             }
         }
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 noteViewModel.selectedNoteIds.collectLatest { selected ->
                     val isSelecting = selected.isNotEmpty()
-
-                    val toolbar = (activity as MainActivity).findViewById<MaterialToolbar>(R.id.materialToolbar)
-                    toolbar.title = if (isSelecting) "${selected.size} selected" else "Notes"
-                    toolbar.setNavigationIcon(R.drawable.ic_close)
-                    toolbar.setNavigationOnClickListener {
-                        noteViewModel.clearSelection()
-                    }
-
-                    if (isSelecting) {
-                        // Switch to selection mode menu
-                        removeMenuProvider(defaultMenuProvider)
-                        if (selectionMenuProvider == null) setupSelectionMenuProvider()
-                        addMenuProvider(selectionMenuProvider)
-                    } else {
-                        // Switch to default menu
-                        toolbar.navigationIcon = null
-                        toolbar.setNavigationOnClickListener(null)
-                        removeMenuProvider(selectionMenuProvider)
-                        addMenuProvider(defaultMenuProvider)
-                    }
+                    updateToolbar(isSelecting, selected.size)
+                    noteAdapter.setSelectedItems(selected)
+                    handleMenuProviders(isSelecting)
                 }
             }
+        }
+    }
+
+    private fun updateToolbar(isSelecting: Boolean, selectedCount: Int) {
+        val toolbar = (activity as? MainActivity)?.findViewById<MaterialToolbar>(R.id.materialToolbar)
+        toolbar?.let {
+            it.title = if (isSelecting) "$selectedCount selected" else "Notes"
+
+            if (isSelecting) {
+                it.setNavigationIcon(R.drawable.ic_close)
+                it.setNavigationOnClickListener {
+                    noteViewModel.clearSelection()
+                }
+            } else {
+                it.navigationIcon = null
+                it.setNavigationOnClickListener(null)
+            }
+        }
+    }
+
+    private fun handleMenuProviders(isSelecting: Boolean) {
+        if (isSelecting) {
+            if (!isSelectionMenuAdded) {
+                removeMenuProvider(defaultMenuProvider)
+                if (selectionMenuProvider == null) setupSelectionMenuProvider()
+                addMenuProvider(selectionMenuProvider)
+                isSelectionMenuAdded = true
+            }
+        } else {
+            if (isSelectionMenuAdded) {
+                removeMenuProvider(selectionMenuProvider)
+                isSelectionMenuAdded = false
+            }
+            addMenuProvider(defaultMenuProvider)
         }
     }
 
@@ -114,9 +143,9 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
                 menuInflater.inflate(R.menu.search_menu, menu)
 
                 val searchItem = menu.findItem(R.id.action_search)
-                val searchView = searchItem.actionView as SearchView
+                val searchView = searchItem.actionView as? SearchView
 
-                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                     override fun onQueryTextSubmit(query: String?): Boolean = false
 
                     override fun onQueryTextChange(newText: String?): Boolean {
@@ -193,5 +222,6 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
         _binding = null
         removeMenuProvider(defaultMenuProvider)
         removeMenuProvider(selectionMenuProvider)
+        isSelectionMenuAdded = false
     }
 }

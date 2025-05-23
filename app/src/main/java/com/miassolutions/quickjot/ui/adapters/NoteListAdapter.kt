@@ -53,7 +53,7 @@ class NoteListAdapter(
                 if (selectedItems.contains(item.noteId)) root.setBackgroundColor(Color.LTGRAY) else root.setBackgroundColor(
                     Color.WHITE
                 )
-                root.isActivated = selectedItems.contains(item.noteId)
+
 
                 root.setOnClickListener {
                     onItemClick(item)

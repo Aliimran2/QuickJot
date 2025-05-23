@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.miassolutions.quickjot.data.local.NoteDao
 import com.miassolutions.quickjot.data.local.NoteDatabase
+import com.miassolutions.quickjot.utils.PreferenceManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,6 +15,12 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NoteModule {
+
+    @Singleton
+    @Provides
+    fun providesPrefs(@ApplicationContext context: Context) : PreferenceManager {
+        return PreferenceManager(context)
+    }
 
     @Singleton
     @Provides

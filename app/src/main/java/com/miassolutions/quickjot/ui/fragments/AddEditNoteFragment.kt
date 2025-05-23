@@ -24,7 +24,7 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
     private val binding get() = _binding!!
 
     private var currentNote: NoteEntity? = null
-    private val args by navArgs< AddEditNoteFragmentArgs>()
+    private val args by navArgs<AddEditNoteFragmentArgs>()
 
     private val noteViewModel by viewModels<NoteViewModel>()
 
@@ -32,10 +32,7 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentAddEditNoteBinding.bind(view)
 
-
-
-
-updateNoteIfNotNull()
+        updateNoteIfNotNull()
         backPressHandler()
 
     }
@@ -63,7 +60,7 @@ updateNoteIfNotNull()
                 val hasChanged =
                     currentNote?.let { it.title != title || it.content != content }!!
 
-                if (title.isBlank() && content.isBlank())  return@apply
+                if (title.isBlank() && content.isBlank()) return@apply
 
                 if (hasChanged) {
                     val updatedNote = currentNote!!.copy(title = title, content = content)
@@ -84,7 +81,6 @@ updateNoteIfNotNull()
         }
 
     }
-
 
 
     fun backPressHandler() {

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.miassolutions.quickjot.data.local.NoteEntity
 import com.miassolutions.quickjot.data.repository.RepositoryImp
+import com.miassolutions.quickjot.utils.PreferenceManager
 import com.miassolutions.quickjot.utils.SortOrder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -22,15 +23,19 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class NoteViewModel @Inject constructor(private val repository: RepositoryImp) : ViewModel() {
+class NoteViewModel @Inject constructor(
+    private val repository: RepositoryImp,
+    private val prefs: PreferenceManager,
+) : ViewModel() {
 
     private val _allNotes = repository.getAllNotes()
 
-    private val _sortedNotes = MutableStateFlow(SortOrder.TIME_DESC)
+    private val _sortedNotes = MutableStateFlow<SortOrder>(prefs.getSortType())
     val sortOrder = _sortedNotes.asStateFlow()
 
-    fun sortOrder(sortOrder: SortOrder){
+    fun sortOrder(sortOrder: SortOrder) {
         _sortedNotes.value = sortOrder
+        prefs.saveSortOrder(sortOrder)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

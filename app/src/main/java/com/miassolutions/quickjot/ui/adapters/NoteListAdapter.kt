@@ -1,5 +1,7 @@
 package com.miassolutions.quickjot.ui.adapters
 
+import android.annotation.SuppressLint
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
@@ -9,9 +11,21 @@ import com.miassolutions.quickjot.databinding.ItemNoteBinding
 import com.miassolutions.quickjot.utils.toFormattedDate
 
 class NoteListAdapter(
-    private val onDeleteClick: (NoteEntity) -> Unit,
     private val onItemClick: (NoteEntity) -> Unit,
+    private val onItemLongClick: (NoteEntity) -> Boolean,
 ) : ListAdapter<NoteEntity, NoteListAdapter.NoteViewHolder>(NoteDiffCallback()) {
+
+
+    private val selectedItems = mutableSetOf<Int>()
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun setSelectedItems(ids: Set<Int>) {
+        selectedItems.clear()
+        selectedItems.addAll(ids)
+        notifyDataSetChanged()
+    }
+
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
@@ -35,12 +49,17 @@ class NoteListAdapter(
                 tvContent.text = item.content
                 tvCreatedAt.text = "Created: ${item.createdAt.toFormattedDate()}"
 
+
+                if (selectedItems.contains(item.noteId)) root.setBackgroundColor(Color.LTGRAY) else root.setBackgroundColor(
+                    Color.WHITE
+                )
+                root.isActivated = selectedItems.contains(item.noteId)
+
                 root.setOnClickListener {
                     onItemClick(item)
                 }
                 root.setOnLongClickListener {
-                    onDeleteClick(item)
-                    true
+                    onItemLongClick(item)
                 }
             }
         }

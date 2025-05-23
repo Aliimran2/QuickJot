@@ -28,18 +28,17 @@ class NoteViewModel @Inject constructor(
     private val prefs: PreferenceManager,
 ) : ViewModel() {
 
-    private val _allNotes = repository.getAllNotes()
 
-    private val _sortedNotes = MutableStateFlow<SortOrder>(prefs.getSortType())
-    val sortOrder = _sortedNotes.asStateFlow()
+    private val _currentSortOrder = MutableStateFlow<SortOrder>(prefs.getSortType())
+    val currentSortOrder = _currentSortOrder.asStateFlow()
 
     fun sortOrder(sortOrder: SortOrder) {
-        _sortedNotes.value = sortOrder
+        _currentSortOrder.value = sortOrder
         prefs.saveSortOrder(sortOrder)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val notesSorted: StateFlow<List<NoteEntity>> = sortOrder
+    val sortedNotes: StateFlow<List<NoteEntity>> = currentSortOrder
         .flatMapLatest { order ->
             repository.getSortedNotes(order)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -50,9 +49,9 @@ class NoteViewModel @Inject constructor(
         searchQuery.value = query
     }
 
-    val notes: Flow<List<NoteEntity>> = combine(notesSorted, searchQuery) { notesSorted, query ->
-        if (query.trim().isBlank()) notesSorted
-        else notesSorted.filter {
+    val displayedNotes: Flow<List<NoteEntity>> = combine(sortedNotes, searchQuery) { notes, query ->
+        if (query.trim().isBlank()) notes
+        else notes.filter {
             it.title.contains(query, ignoreCase = true) ||
                     it.content.contains(query, ignoreCase = true)
         }
@@ -82,6 +81,51 @@ class NoteViewModel @Inject constructor(
 
     fun deleteNote(noteEntity: NoteEntity) =
         viewModelScope.launch { repository.deleteNote(noteEntity) }
+
+
+    //multi selection logic
+
+    private val _selectedNoteIds = MutableStateFlow<Set<Int>>(emptySet())
+    val selectedNoteIds = _selectedNoteIds.asStateFlow()
+
+    // This will hold the complete list of items
+    private val _allAvailableNotes = MutableStateFlow<List<NoteEntity>>(emptyList())
+    val allAvailableNotes: StateFlow<List<NoteEntity>> = _allAvailableNotes.asStateFlow()
+
+
+
+
+
+    init {
+        viewModelScope.launch {
+            sortedNotes.collect {
+                _allAvailableNotes.value = it
+            }
+        }
+    }
+
+    fun toggleSelection(itemId: Int) {
+        _selectedNoteIds.value = if (_selectedNoteIds.value.contains(itemId)) {
+            _selectedNoteIds.value - itemId
+        } else {
+            _selectedNoteIds.value + itemId
+        }
+    }
+
+    fun selectAll() {
+        _selectedNoteIds.value = _allAvailableNotes.value.map { it.noteId }.toSet()
+    }
+
+    fun clearSelection() {
+        _selectedNoteIds.value = emptySet<Int>()
+    }
+
+    fun deleteSelectedItems() {
+        viewModelScope.launch {
+            repository.deleteNotesByIds(_selectedNoteIds.value.toList())
+            clearSelection()
+        }
+    }
 
 
 }

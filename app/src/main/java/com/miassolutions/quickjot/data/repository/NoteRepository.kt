@@ -14,4 +14,6 @@ interface NoteRepository {
 
     fun getSortedNotes(order: SortOrder): Flow<List<NoteEntity>>
 
+   suspend fun deleteNotesByIds(ids : List<Int>)
+
 }

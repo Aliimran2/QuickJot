@@ -39,4 +39,8 @@ class RepositoryImp @Inject constructor(private val dao: NoteDao) : NoteReposito
             }
         }
     }
+
+    override suspend fun deleteNotesByIds(ids: List<Int>) {
+        dao.deleteNotesByIds(ids)
+    }
 }

@@ -25,4 +25,7 @@ interface NoteDao {
 
     @Query("SELECT * FROM note_table ORDER BY createdAt DESC")
     fun getAllNotes(): Flow<List<NoteEntity>>
+
+    @Query("DELETE FROM note_table WHERE noteId IN (:ids)")
+    suspend fun deleteNotesByIds(ids : List<Int>)
 }

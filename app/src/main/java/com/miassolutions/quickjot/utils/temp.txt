@@ -1,0 +1,65 @@
+//    private fun startActionMode() {
+//        if (actionMode == null) {
+//            actionMode = (activity as MainActivity).startSupportActionMode(
+//                object : ActionMode.Callback {
+//                    override fun onCreateActionMode(
+//                        mode: ActionMode?,
+//                        menu: Menu?,
+//                    ): Boolean {
+//                        mode?.menuInflater?.inflate(R.menu.multi_select_menu, menu)
+//                        return true
+//                    }
+//
+//                    override fun onPrepareActionMode(
+//                        mode: ActionMode?,
+//                        menu: Menu?,
+//                    ): Boolean {
+//                        return false
+//                    }
+//
+//                    override fun onActionItemClicked(
+//                        mode: ActionMode?,
+//                        item: MenuItem?,
+//                    ): Boolean {
+//                        return when (item?.itemId) {
+//                            R.id.action_delete -> {
+//                                noteViewModel.deleteSelectedItems()
+//                                true
+//                            }
+//
+//                            R.id.action_select_all -> {
+//                                noteViewModel.selectAll()
+//                                true
+//                            }
+//
+//                            R.id.action_deselec_all -> {
+//                                noteViewModel.clearSelection()
+//                                true
+//                            }
+//
+//                            else -> false
+//                        }
+//                    }
+//
+//                    override fun onDestroyActionMode(mode: ActionMode?) {
+//                        noteViewModel.clearSelection()
+//                        actionMode = null
+//                    }
+//                }
+//            )
+//        }
+//    }
+
+
+
+
+
+//                noteViewModel.selectedNoteIds.collect { selectedIds ->
+//                    noteAdapter.setSelectedItems(selectedIds)
+//                    actionMode?.title = "${selectedIds.size} selected"
+//
+//                    // If no items selected, finish action mode
+//                    if (selectedIds.isEmpty() && actionMode != null) {
+//                        actionMode?.finish()
+//                    }
+//                }

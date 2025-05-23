@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.miassolutions.quickjot.R
 import com.miassolutions.quickjot.data.local.NoteEntity
 import com.miassolutions.quickjot.databinding.ItemNoteBinding
 import com.miassolutions.quickjot.utils.toFormattedDate
@@ -51,9 +52,14 @@ class NoteListAdapter(
                 tvCreatedAt.text = "Created: ${item.createdAt.toFormattedDate()}"
 
 
-                root.setBackgroundColor(
-                    if (isSelected(item)) Color.LTGRAY else Color.WHITE
+//                root.setBackgroundColor(
+//                    if (isSelected(item)) Color.LTGRAY else Color.WHITE
+//                )
+
+                root.setBackgroundResource(
+                    if (isSelected(item)) R.drawable.item_selected_background else R.drawable.item_background
                 )
+
 
 
 

@@ -13,6 +13,7 @@ import com.miassolutions.quickjot.utils.toFormattedDate
 class NoteListAdapter(
     private val onItemClick: (NoteEntity) -> Unit,
     private val onItemLongClick: (NoteEntity) -> Boolean,
+    private val isSelected : (NoteEntity) -> Boolean
 ) : ListAdapter<NoteEntity, NoteListAdapter.NoteViewHolder>(NoteDiffCallback()) {
 
 
@@ -50,9 +51,10 @@ class NoteListAdapter(
                 tvCreatedAt.text = "Created: ${item.createdAt.toFormattedDate()}"
 
 
-                if (selectedItems.contains(item.noteId)) root.setBackgroundColor(Color.LTGRAY) else root.setBackgroundColor(
-                    Color.WHITE
+                root.setBackgroundColor(
+                    if (isSelected(item)) Color.LTGRAY else Color.WHITE
                 )
+
 
 
                 root.setOnClickListener {

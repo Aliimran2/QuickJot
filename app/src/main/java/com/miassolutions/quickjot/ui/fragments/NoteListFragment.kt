@@ -68,6 +68,9 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
             onItemLongClick = { note ->
                 noteViewModel.toggleSelection(note.noteId)
                 true
+            },
+            isSelected = { note ->
+                noteViewModel.selectedNoteIds.value.contains(note.noteId)
             }
         )
 

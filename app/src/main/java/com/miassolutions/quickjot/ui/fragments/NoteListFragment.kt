@@ -2,15 +2,11 @@ package com.miassolutions.quickjot.ui.fragments
 
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.View
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.widget.SearchView
-import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.appbar.MaterialToolbar
 import com.miassolutions.quickjot.R
@@ -21,6 +17,9 @@ import com.miassolutions.quickjot.ui.viewmodels.NoteViewModel
 import com.miassolutions.quickjot.utils.NoteListFragmentMenuProvider
 import com.miassolutions.quickjot.utils.NoteListMenuActions
 import com.miassolutions.quickjot.utils.SortOrder
+import com.miassolutions.quickjot.utils.collectLatestLifecycleFlow
+import com.miassolutions.quickjot.utils.showSnackbarMsg
+import com.miassolutions.quickjot.utils.showToast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -92,17 +91,15 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list), NoteListMenuActi
     }
 
     private fun observeViewModel() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
+        collectLatestLifecycleFlow {
+            launch {
                 noteViewModel.displayedNotes.collectLatest { notes ->
                     Log.d(TAG, "Notes: $notes")
                     noteAdapter.submitList(notes)
                 }
             }
-        }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
+            launch {
                 noteViewModel.selectedNoteIds.collectLatest { selected ->
                     val newIsInSelectionMode = selected.isNotEmpty()
                     updateToolbar(newIsInSelectionMode, selected.size)
@@ -169,6 +166,8 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list), NoteListMenuActi
 
     override fun onDeleteSelectedNotes() {
         noteViewModel.deleteSelectedItems()
+        val notesSize =noteViewModel.selectedNoteIds.value.size
+        showSnackbarMsg("$notesSize note(s) Deleted")
     }
 
     override fun onSelectAllNotes() {

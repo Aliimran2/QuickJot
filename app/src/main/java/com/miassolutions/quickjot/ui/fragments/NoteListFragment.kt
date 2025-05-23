@@ -34,48 +34,37 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
     private lateinit var noteAdapter: NoteListAdapter
     private val noteViewModel by viewModels<NoteViewModel>()
 
-    private var defaultMenuProvider: MenuProvider? = null
-    private var selectionMenuProvider: MenuProvider? = null
-    private var isSelectionMenuAdded = false
+    // Hold the state of whether we are in selection mode
+    private var isInSelectionMode: Boolean = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentNoteListBinding.bind(view)
 
+        // Setup back press handling
         requireActivity().onBackPressedDispatcher.addCallback(
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    if (isSelectionMenuAdded) {
-                        handleMenuProviders(false)
-                        noteViewModel.clearSelection()
+                    if (isInSelectionMode) {
+                        noteViewModel.clearSelection() // Exit selection mode
                     } else {
-//                        requireActivity().finish()    // finish activity and therefore app
-                        requireActivity().moveTaskToBack(true) //minimize activity
+                        requireActivity().moveTaskToBack(true) // Minimize app
                     }
-
                 }
             }
         )
 
         setupRecyclerView()
-        setupUI()
+        fabClickListener()
         observeViewModel()
-        setupDefaultMenuProvider()
-
-        defaultMenuProvider?.let {
-            requireActivity().addMenuProvider(
-                it,
-                viewLifecycleOwner,
-                Lifecycle.State.RESUMED
-            )
-        }
+        setupMenuProvider()
     }
 
     private fun setupRecyclerView() {
         noteAdapter = NoteListAdapter(
             onItemClick = { note ->
-                if (!isSelectionMenuAdded) {
+                if (!isInSelectionMode) {
                     val action = NoteListFragmentDirections.toAddEditNoteFragment(note)
                     findNavController().navigate(action)
                 } else {
@@ -84,17 +73,16 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
             },
             onItemLongClick = { note ->
                 noteViewModel.toggleSelection(note.noteId)
-                true
+                true // Consume the long click event
             },
             isSelected = { note ->
                 noteViewModel.selectedNoteIds.value.contains(note.noteId)
             }
         )
-
         binding.rvNotes.adapter = noteAdapter
     }
 
-    private fun setupUI() {
+    private fun fabClickListener() {
         binding.floatingActionButton.setOnClickListener {
             val action = NoteListFragmentDirections.toAddEditNoteFragment(null)
             findNavController().navigate(action)
@@ -114,149 +102,111 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 noteViewModel.selectedNoteIds.collectLatest { selected ->
-                    val isSelecting = selected.isNotEmpty()
-                    updateToolbar(isSelecting, selected.size)
+                    val newIsInSelectionMode = selected.isNotEmpty()
+                    updateToolbar(newIsInSelectionMode, selected.size)
                     noteAdapter.setSelectedItems(selected)
-                    handleMenuProviders(isSelecting)
+
+                    // Invalidate menu if selection mode changes
+                    if (newIsInSelectionMode != isInSelectionMode) {
+                        isInSelectionMode = newIsInSelectionMode
+                        requireActivity().invalidateMenu() // Request menu to be re-drawn
+                    }
+
+                    // Hide/Show FAB based on selection mode
+                    if (isInSelectionMode) {
+                        binding.floatingActionButton.hide()
+                    } else {
+                        binding.floatingActionButton.show()
+                    }
                 }
             }
         }
     }
 
     private fun updateToolbar(isSelecting: Boolean, selectedCount: Int) {
-        val toolbar =
-            (activity as? MainActivity)?.findViewById<MaterialToolbar>(R.id.materialToolbar)
+        val toolbar = (activity as? MainActivity)?.findViewById<MaterialToolbar>(R.id.materialToolbar)
         toolbar?.let {
             it.title = if (isSelecting) "$selectedCount selected" else "Notes"
 
-
             if (isSelecting) {
                 it.setNavigationIcon(R.drawable.ic_close)
-
                 it.setNavigationOnClickListener {
                     noteViewModel.clearSelection()
                 }
             } else {
-                it.navigationIcon = null
-
-                it.setNavigationOnClickListener(null)
+                it.navigationIcon = null // Remove navigation icon
+                it.setNavigationOnClickListener(null) // Clear listener
             }
         }
     }
 
-    private fun handleMenuProviders(isSelecting: Boolean) {
-        if (isSelecting) {
-            if (!isSelectionMenuAdded) {
-                removeMenuProvider(defaultMenuProvider)
-                binding.floatingActionButton.hide()
-                if (selectionMenuProvider == null) setupSelectionMenuProvider()
-                addMenuProvider(selectionMenuProvider)
-                isSelectionMenuAdded = true
-            }
-        } else {
-            if (isSelectionMenuAdded) {
-                binding.floatingActionButton.show()
-                removeMenuProvider(selectionMenuProvider)
-                isSelectionMenuAdded = false
-            }
-            addMenuProvider(defaultMenuProvider)
-        }
-    }
-
-    private fun setupDefaultMenuProvider() {
-
-        defaultMenuProvider = object : MenuProvider {
+    private fun setupMenuProvider() {
+        requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.search_menu, menu)
+                if (isInSelectionMode) {
+                    menuInflater.inflate(R.menu.multi_select_menu, menu)
+                } else {
+                    menuInflater.inflate(R.menu.search_menu, menu)
 
-                val searchItem = menu.findItem(R.id.action_search)
-                val searchView = searchItem.actionView as? SearchView
+                    val searchItem = menu.findItem(R.id.action_search)
+                    val searchView = searchItem.actionView as? SearchView
 
-                searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                    override fun onQueryTextSubmit(query: String?): Boolean = false
+                    searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                        override fun onQueryTextSubmit(query: String?): Boolean = false
 
-                    override fun onQueryTextChange(newText: String?): Boolean {
-                        noteViewModel.updateQuery(newText.orEmpty())
-                        return true
-                    }
-                })
+                        override fun onQueryTextChange(newText: String?): Boolean {
+                            noteViewModel.updateQuery(newText.orEmpty())
+                            return true
+                        }
+                    })
+                }
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return when (menuItem.itemId) {
-                    R.id.sort_title_asc -> {
-                        noteViewModel.sortOrder(SortOrder.TITLE_ASC)
-                        true
+                return if (isInSelectionMode) {
+                    when (menuItem.itemId) {
+                        R.id.action_delete -> {
+                            noteViewModel.deleteSelectedItems()
+                            true
+                        }
+                        R.id.action_select_all -> {
+                            noteViewModel.selectAll()
+                            true
+                        }
+                        R.id.action_deselec_all -> {
+                            noteViewModel.clearSelection()
+                            true
+                        }
+                        else -> false
                     }
-
-                    R.id.sort_title_desc -> {
-                        noteViewModel.sortOrder(SortOrder.TITLE_DESC)
-                        true
+                } else {
+                    when (menuItem.itemId) {
+                        R.id.sort_title_asc -> {
+                            noteViewModel.sortOrder(SortOrder.TITLE_ASC)
+                            true
+                        }
+                        R.id.sort_title_desc -> {
+                            noteViewModel.sortOrder(SortOrder.TITLE_DESC)
+                            true
+                        }
+                        R.id.sort_date_asc -> {
+                            noteViewModel.sortOrder(SortOrder.TIME_ASC)
+                            true
+                        }
+                        R.id.sort_date_desc -> {
+                            noteViewModel.sortOrder(SortOrder.TIME_DESC)
+                            true
+                        }
+                        else -> false
                     }
-
-                    R.id.sort_date_asc -> {
-                        noteViewModel.sortOrder(SortOrder.TIME_ASC)
-                        true
-                    }
-
-                    R.id.sort_date_desc -> {
-                        noteViewModel.sortOrder(SortOrder.TIME_DESC)
-                        true
-                    }
-
-                    else -> false
                 }
             }
-        }
-    }
-
-    private fun setupSelectionMenuProvider() {
-
-        selectionMenuProvider = object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.multi_select_menu, menu)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return when (menuItem.itemId) {
-                    R.id.action_delete -> {
-                        noteViewModel.deleteSelectedItems()
-                        true
-                    }
-
-                    R.id.action_select_all -> {
-                        noteViewModel.selectAll()
-                        true
-                    }
-
-                    R.id.action_deselec_all -> {
-                        noteViewModel.clearSelection()
-                        true
-                    }
-
-                    else -> false
-                }
-            }
-        }
-    }
-
-    private fun addMenuProvider(provider: MenuProvider?) {
-        provider?.let {
-            requireActivity().addMenuProvider(it, viewLifecycleOwner, Lifecycle.State.RESUMED)
-        }
-    }
-
-    private fun removeMenuProvider(provider: MenuProvider?) {
-        provider?.let {
-            requireActivity().removeMenuProvider(it)
-        }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        removeMenuProvider(defaultMenuProvider)
-        removeMenuProvider(selectionMenuProvider)
-        isSelectionMenuAdded = false
+
     }
 }

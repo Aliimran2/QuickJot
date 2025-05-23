@@ -3,6 +3,7 @@ package com.miassolutions.quickjot.ui.fragments
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -40,6 +41,22 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentNoteListBinding.bind(view)
+
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if (isSelectionMenuAdded) {
+                        handleMenuProviders(false)
+                        noteViewModel.clearSelection()
+                    } else {
+//                        requireActivity().finish()    // finish activity and therefore app
+                        requireActivity().moveTaskToBack(true) //minimize activity
+                    }
+
+                }
+            }
+        )
 
         setupRecyclerView()
         setupUI()
@@ -107,17 +124,21 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
     }
 
     private fun updateToolbar(isSelecting: Boolean, selectedCount: Int) {
-        val toolbar = (activity as? MainActivity)?.findViewById<MaterialToolbar>(R.id.materialToolbar)
+        val toolbar =
+            (activity as? MainActivity)?.findViewById<MaterialToolbar>(R.id.materialToolbar)
         toolbar?.let {
             it.title = if (isSelecting) "$selectedCount selected" else "Notes"
 
+
             if (isSelecting) {
                 it.setNavigationIcon(R.drawable.ic_close)
+
                 it.setNavigationOnClickListener {
                     noteViewModel.clearSelection()
                 }
             } else {
                 it.navigationIcon = null
+
                 it.setNavigationOnClickListener(null)
             }
         }
@@ -127,12 +148,14 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
         if (isSelecting) {
             if (!isSelectionMenuAdded) {
                 removeMenuProvider(defaultMenuProvider)
+                binding.floatingActionButton.hide()
                 if (selectionMenuProvider == null) setupSelectionMenuProvider()
                 addMenuProvider(selectionMenuProvider)
                 isSelectionMenuAdded = true
             }
         } else {
             if (isSelectionMenuAdded) {
+                binding.floatingActionButton.show()
                 removeMenuProvider(selectionMenuProvider)
                 isSelectionMenuAdded = false
             }
@@ -141,6 +164,7 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
     }
 
     private fun setupDefaultMenuProvider() {
+
         defaultMenuProvider = object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.search_menu, menu)
@@ -164,18 +188,22 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
                         noteViewModel.sortOrder(SortOrder.TITLE_ASC)
                         true
                     }
+
                     R.id.sort_title_desc -> {
                         noteViewModel.sortOrder(SortOrder.TITLE_DESC)
                         true
                     }
+
                     R.id.sort_date_asc -> {
                         noteViewModel.sortOrder(SortOrder.TIME_ASC)
                         true
                     }
+
                     R.id.sort_date_desc -> {
                         noteViewModel.sortOrder(SortOrder.TIME_DESC)
                         true
                     }
+
                     else -> false
                 }
             }
@@ -183,6 +211,7 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
     }
 
     private fun setupSelectionMenuProvider() {
+
         selectionMenuProvider = object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.multi_select_menu, menu)
@@ -194,14 +223,17 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
                         noteViewModel.deleteSelectedItems()
                         true
                     }
+
                     R.id.action_select_all -> {
                         noteViewModel.selectAll()
                         true
                     }
+
                     R.id.action_deselec_all -> {
                         noteViewModel.clearSelection()
                         true
                     }
+
                     else -> false
                 }
             }

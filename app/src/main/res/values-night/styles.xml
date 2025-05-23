@@ -26,7 +26,7 @@
     <style name="fab_style">
         <item name="android:clickable">true</item>
         <item name="android:layout_margin">16dp</item>
-        <item name="backgroundTint">#C5CAE9</item>
+        <item name="backgroundTint">#2a3413</item>
         <item name="android:layout_gravity">bottom|end</item>
         <item name="android:contentDescription">@string/add_a_note</item>
         <item name="android:focusable">true</item>

@@ -18,6 +18,8 @@ import com.miassolutions.quickjot.databinding.FragmentNoteListBinding
 import com.miassolutions.quickjot.ui.activities.MainActivity
 import com.miassolutions.quickjot.ui.adapters.NoteListAdapter
 import com.miassolutions.quickjot.ui.viewmodels.NoteViewModel
+import com.miassolutions.quickjot.utils.NoteListFragmentMenuProvider
+import com.miassolutions.quickjot.utils.NoteListMenuActions
 import com.miassolutions.quickjot.utils.SortOrder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
@@ -26,7 +28,7 @@ import kotlinx.coroutines.launch
 private const val TAG = "NoteListFragment"
 
 @AndroidEntryPoint
-class NoteListFragment : Fragment(R.layout.fragment_note_list) {
+class NoteListFragment : Fragment(R.layout.fragment_note_list), NoteListMenuActions {
 
     private var _binding: FragmentNoteListBinding? = null
     private val binding get() = _binding!!
@@ -124,7 +126,8 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
     }
 
     private fun updateToolbar(isSelecting: Boolean, selectedCount: Int) {
-        val toolbar = (activity as? MainActivity)?.findViewById<MaterialToolbar>(R.id.materialToolbar)
+        val toolbar =
+            (activity as? MainActivity)?.findViewById<MaterialToolbar>(R.id.materialToolbar)
         toolbar?.let {
             it.title = if (isSelecting) "$selectedCount selected" else "Notes"
 
@@ -141,72 +144,38 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
     }
 
     private fun setupMenuProvider() {
-        requireActivity().addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                if (isInSelectionMode) {
-                    menuInflater.inflate(R.menu.multi_select_menu, menu)
-                } else {
-                    menuInflater.inflate(R.menu.search_menu, menu)
+        val menuProvider = NoteListFragmentMenuProvider(
+            viewLifecycleOwner,
+            menuActions = this,
+            getCurrentSelectionMode = { isInSelectionMode }
+        )
 
-                    val searchItem = menu.findItem(R.id.action_search)
-                    val searchView = searchItem.actionView as? SearchView
-
-                    searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                        override fun onQueryTextSubmit(query: String?): Boolean = false
-
-                        override fun onQueryTextChange(newText: String?): Boolean {
-                            noteViewModel.updateQuery(newText.orEmpty())
-                            return true
-                        }
-                    })
-                }
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return if (isInSelectionMode) {
-                    when (menuItem.itemId) {
-                        R.id.action_delete -> {
-                            noteViewModel.deleteSelectedItems()
-                            true
-                        }
-                        R.id.action_select_all -> {
-                            noteViewModel.selectAll()
-                            true
-                        }
-                        R.id.action_deselec_all -> {
-                            noteViewModel.clearSelection()
-                            true
-                        }
-                        else -> false
-                    }
-                } else {
-                    when (menuItem.itemId) {
-                        R.id.sort_title_asc -> {
-                            noteViewModel.sortOrder(SortOrder.TITLE_ASC)
-                            true
-                        }
-                        R.id.sort_title_desc -> {
-                            noteViewModel.sortOrder(SortOrder.TITLE_DESC)
-                            true
-                        }
-                        R.id.sort_date_asc -> {
-                            noteViewModel.sortOrder(SortOrder.TIME_ASC)
-                            true
-                        }
-                        R.id.sort_date_desc -> {
-                            noteViewModel.sortOrder(SortOrder.TIME_DESC)
-                            true
-                        }
-                        else -> false
-                    }
-                }
-            }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+        requireActivity().addMenuProvider(menuProvider, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
 
+    }
+
+    override fun onSortOrderSelected(sortOrder: SortOrder) {
+        noteViewModel.sortOrder(sortOrder)
+    }
+
+    override fun onQueryTextChange(query: String) {
+        noteViewModel.updateQuery(query)
+    }
+
+    override fun onDeleteSelectedNotes() {
+        noteViewModel.deleteSelectedItems()
+    }
+
+    override fun onSelectAllNotes() {
+        noteViewModel.selectAll()
+    }
+
+    override fun onDeselectAllNotes() {
+        noteViewModel.clearSelection()
     }
 }

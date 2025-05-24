@@ -52,9 +52,6 @@ class NoteListAdapter(
                 tvCreatedAt.text = "Created: ${item.createdAt.toFormattedDate()}"
 
 
-//                root.setBackgroundColor(
-//                    if (isSelected(item)) Color.LTGRAY else Color.WHITE
-//                )
 
                 root.setBackgroundResource(
                     if (isSelected(item)) R.drawable.item_selected_background else R.drawable.item_background

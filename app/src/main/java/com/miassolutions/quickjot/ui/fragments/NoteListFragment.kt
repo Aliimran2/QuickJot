@@ -1,5 +1,6 @@
 package com.miassolutions.quickjot.ui.fragments
 
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -37,6 +38,27 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list), NoteListMenuActi
 
     // Hold the state of whether we are in selection mode
     private var isInSelectionMode: Boolean = false
+
+    private fun updateToolbar(selectedCount: Int) {
+        val toolbar =
+            (activity as? MainActivity)?.findViewById<MaterialToolbar>(R.id.materialToolbar)
+        toolbar?.let {
+
+            it.title = if (isInSelectionMode) "$selectedCount" else getString(R.string.app_name)
+
+            if (isInSelectionMode) {
+                it.setNavigationIcon(R.drawable.ic_close)
+                it.setBackgroundColor(Color.LTGRAY)
+                it.setNavigationOnClickListener {
+                    noteViewModel.clearSelection()
+                }
+            } else {
+                it.navigationIcon = null // Remove navigation icon
+                it.setNavigationOnClickListener(null) // Clear listener
+                it.setBackgroundColor(Color.WHITE)
+            }
+        }
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -92,21 +114,23 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list), NoteListMenuActi
 
     private fun observeViewModel() {
         collectLatestLifecycleFlow {
+            //displaying notes in recyclerview
             launch {
                 noteViewModel.displayedNotes.collectLatest { notes ->
                     noteAdapter.submitList(notes)
                 }
             }
 
+            // toolbar as actionMode
             launch {
                 noteViewModel.selectedNoteIds.collectLatest { selected ->
-                    val newIsInSelectionMode = selected.isNotEmpty()
-                    updateToolbar(newIsInSelectionMode, selected.size)
+                    // if selected is not zero isInSelectionMode = true so toolbar is CAB now
+                    isInSelectionMode = selected.isNotEmpty()
+                    updateToolbar(selected.size)
                     noteAdapter.setSelectedItems(selected)
 
-                    // Invalidate menu if selection mode changes
-                    if (newIsInSelectionMode != isInSelectionMode) {
-                        isInSelectionMode = newIsInSelectionMode
+                    //
+                    if (isInSelectionMode!=selected.isEmpty()) {
                         requireActivity().invalidateMenu() // Request menu to be re-drawn
                     }
 
@@ -121,23 +145,7 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list), NoteListMenuActi
         }
     }
 
-    private fun updateToolbar(isSelecting: Boolean, selectedCount: Int) {
-        val toolbar =
-            (activity as? MainActivity)?.findViewById<MaterialToolbar>(R.id.materialToolbar)
-        toolbar?.let {
-            it.title = if (isSelecting) "$selectedCount" else getString(R.string.app_name)
 
-            if (isSelecting) {
-                it.setNavigationIcon(R.drawable.ic_close)
-                it.setNavigationOnClickListener {
-                    noteViewModel.clearSelection()
-                }
-            } else {
-                it.navigationIcon = null // Remove navigation icon
-                it.setNavigationOnClickListener(null) // Clear listener
-            }
-        }
-    }
 
     private fun setupMenuProvider() {
         val menuProvider = NoteListFragmentMenuProvider(

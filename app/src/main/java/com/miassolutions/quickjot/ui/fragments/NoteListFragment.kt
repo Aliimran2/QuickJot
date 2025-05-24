@@ -24,7 +24,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-private const val TAG = "NoteListFragment"
+
 
 @AndroidEntryPoint
 class NoteListFragment : Fragment(R.layout.fragment_note_list), NoteListMenuActions {
@@ -94,7 +94,6 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list), NoteListMenuActi
         collectLatestLifecycleFlow {
             launch {
                 noteViewModel.displayedNotes.collectLatest { notes ->
-                    Log.d(TAG, "Notes: $notes")
                     noteAdapter.submitList(notes)
                 }
             }
@@ -126,7 +125,7 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list), NoteListMenuActi
         val toolbar =
             (activity as? MainActivity)?.findViewById<MaterialToolbar>(R.id.materialToolbar)
         toolbar?.let {
-            it.title = if (isSelecting) "$selectedCount selected" else "Notes"
+            it.title = if (isSelecting) "$selectedCount" else getString(R.string.app_name)
 
             if (isSelecting) {
                 it.setNavigationIcon(R.drawable.ic_close)
@@ -167,7 +166,8 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list), NoteListMenuActi
     override fun onDeleteSelectedNotes() {
         noteViewModel.deleteSelectedItems()
         val notesSize =noteViewModel.selectedNoteIds.value.size
-        showSnackbarMsg("$notesSize note(s) Deleted")
+        val msg = if (notesSize == 1) "1 note" else "$notesSize notes deleted"
+        showSnackbarMsg(msg)
     }
 
     override fun onSelectAllNotes() {

@@ -93,9 +93,6 @@ class NoteViewModel @Inject constructor(
     val allAvailableNotes: StateFlow<List<NoteEntity>> = _allAvailableNotes.asStateFlow()
 
 
-
-
-
     init {
         viewModelScope.launch {
             sortedNotes.collect {
@@ -129,3 +126,4 @@ class NoteViewModel @Inject constructor(
 
 
 }
+

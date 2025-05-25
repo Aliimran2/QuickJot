@@ -14,6 +14,6 @@
     <string name="search">Search</string>
     <string name="sort_by_title">Sort by Title A-Z</string>
     <string name="sort_by_title_d">Sort by Title Z-A</string>
-    <string name="sort_by_date_a">Sort by Date New-Old</string>
-    <string name="sort_by_date_d">Sort by Date Old-New</string>
+    <string name="sort_by_date_a">Sort by Date Old-New</string>
+    <string name="sort_by_date_d">Sort by Date New-Old</string>
 </resources>

@@ -43,6 +43,8 @@
                     android:layout_marginTop="16dp"
                     android:hint="@string/note"
                     android:background="@null"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
                     android:inputType="textCapSentences|textMultiLine"
                     android:minHeight="600dp" />
 

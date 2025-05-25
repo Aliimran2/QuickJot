@@ -5,7 +5,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.core.view.MenuProvider
 import com.miassolutions.quickjot.R
-import com.miassolutions.quickjot.data.local.NoteEntity
 
 class EditMenuProvider(
     private val onShareAction: () -> Unit,

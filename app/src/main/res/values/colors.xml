@@ -3,6 +3,8 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="grey">#757779</color>
+    <color name="cabColor">#CCCCCC</color>
+    <color name="toolbarColor">#00000000</color>
 
     <color name="primary">#6750A4</color>
     <color name="onPrimary">#FFFFFF</color>

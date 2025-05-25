@@ -3,6 +3,7 @@ package com.miassolutions.quickjot.ui.fragments
 import android.os.Bundle
 import android.view.View
 import androidx.activity.OnBackPressedCallback
+import androidx.core.view.MenuHost
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -19,6 +20,7 @@ import com.miassolutions.quickjot.utils.SelectionStateManager
 import com.miassolutions.quickjot.utils.collectLatestLifecycleFlow
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
@@ -99,7 +101,8 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
     }
 
     private fun setupMenuProvider() {
-        requireActivity().addMenuProvider(
+        val menuHost : MenuHost = requireActivity()
+        menuHost.addMenuProvider(
             NoteMenuProvider(
                 isInSelectionMode = { noteViewModel.selectedNoteIds.value.isNotEmpty() },
                 onSearchQueryChanged = { noteViewModel.updateQuery(it) },
@@ -115,25 +118,27 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
 
     private fun observeViewModel() {
         collectLatestLifecycleFlow {
-            //for ui collectLatest
-            noteViewModel.displayedNotes.collectLatest {
-                noteAdapter.submitList(it)
-            }
-
-
-            // collect: Use collect when every single emission matters and needs to be processed sequentially, even if it takes time.
-
-            noteViewModel.selectedNoteIds.collect { selectedIds ->
-                val hasSelection = selectedIds.isNotEmpty()
-                selectionStateManager.updateSelectionState(selectedIds.size)
-                noteAdapter.setSelectedItems(selectedIds)
-
-                if (hasSelection) {
-                    binding.floatingActionButton.hide()
-                } else {
-                    binding.floatingActionButton.show()
+            launch {
+                //for ui collectLatest
+                noteViewModel.displayedNotes.collectLatest {
+                    noteAdapter.submitList(it)
                 }
-                requireActivity().invalidateMenu()
+            }
+            launch {
+                // collect: Use collect when every single emission matters and needs to be processed sequentially, even if it takes time.
+
+                noteViewModel.selectedNoteIds.collect { selectedIds ->
+                    val hasSelection = selectedIds.isNotEmpty()
+                    selectionStateManager.updateSelectionState(selectedIds.size)
+                    noteAdapter.setSelectedItems(selectedIds)
+
+                    if (hasSelection) {
+                        binding.floatingActionButton.hide()
+                    } else {
+                        binding.floatingActionButton.show()
+                    }
+                    activity?.invalidateOptionsMenu()
+                }
             }
         }
     }
@@ -141,6 +146,7 @@ class NoteListFragment : Fragment(R.layout.fragment_note_list) {
 
     override fun onDestroyView() {
         super.onDestroyView()
+
         _binding = null
 
     }

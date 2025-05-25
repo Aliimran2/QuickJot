@@ -1,6 +1,8 @@
 package com.miassolutions.quickjot.utils
 
 import android.graphics.Color
+import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getString
 import com.google.android.material.appbar.MaterialToolbar
 import com.miassolutions.quickjot.R
 
@@ -8,18 +10,17 @@ class SelectionStateManager(
     private val toolbar: MaterialToolbar,
     private val onSelectionCleared: () -> Unit,
 ) {
+    private val context = toolbar.context
     private var selectedCount = 0
-    private val originalTitle = toolbar.title
-    private val originalBackground = toolbar.background
-    private val originalNavIcon = toolbar.navigationIcon
+
 
     fun updateSelectionState(count: Int) {
         selectedCount = count
         val hasSelection = count > 0
 
-        toolbar.title = if (hasSelection) count.toString() else originalTitle
+        toolbar.title = if (hasSelection) count.toString() else context.getString(R.string.app_name)
         toolbar.setBackgroundColor(
-            if (hasSelection) Color.LTGRAY else Color.TRANSPARENT
+            if (hasSelection) context.getColor(R.color.cabColor) else context.getColor(R.color.toolbarColor)
         )
 
         if (hasSelection) {
@@ -28,7 +29,7 @@ class SelectionStateManager(
                 onSelectionCleared()
             }
         } else {
-            toolbar.navigationIcon = originalNavIcon
+            toolbar.navigationIcon = null
             toolbar.setNavigationOnClickListener(null)
         }
     }
